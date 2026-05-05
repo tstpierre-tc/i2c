@@ -1,16 +1,18 @@
 package main
 
-import "github.com/davecheney/i2c"
+import "github.com/tucowsinc/timstpierre-tc/i2c"
 import "log"
 import "fmt"
 import "time"
 
 func check(err error) {
-	if err != nil { log.Fatal(err) }
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {
-	i, err := i2c.New(0x27, 1)
+	i, err := i2c.New(0x27, 3)
 	check(err)
 	lcd, err := i2c.NewLcd(i, 2, 1, 0, 4, 5, 6, 7, 3)
 	check(err)
@@ -27,4 +29,4 @@ func main() {
 		fmt.Fprint(lcd, "i2c, VGA, and Go")
 		time.Sleep(333 * time.Millisecond)
 	}
-}	
+}

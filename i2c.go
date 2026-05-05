@@ -2,7 +2,7 @@
 //
 // Before usage you should load the i2c-dev kenel module
 //
-//      sudo modprobe i2c-dev
+//	sudo modprobe i2c-dev
 //
 // Each i2c bus can address 127 independent i2c devices, and most
 // linux systems contain several buses.
@@ -12,10 +12,12 @@ import (
 	"fmt"
 	"os"
 	"syscall"
+	// "golang.org/x/sys/unix"
 )
 
 const (
 	i2c_SLAVE = 0x0703
+	I2CRDWR   = 0x0700
 )
 
 // I2C represents a connection to an i2c device.
@@ -25,11 +27,11 @@ type I2C struct {
 
 // New opens a connection to an i2c device.
 func New(addr uint8, bus int) (*I2C, error) {
-	f, err := os.OpenFile(fmt.Sprintf("/dev/i2c-%d", bus), os.O_RDWR, 0600)
+	f, err := os.OpenFile(fmt.Sprintf("/dev/iic%d", bus), os.O_RDWR, 0660)
 	if err != nil {
 		return nil, err
 	}
-	if err := ioctl(f.Fd(), i2c_SLAVE, uintptr(addr)); err != nil {
+	if err := ioctl(f.Fd(), I2CRDWR, uintptr(addr)); err != nil {
 		return nil, err
 	}
 	return &I2C{f}, nil
@@ -54,6 +56,16 @@ func (i2c *I2C) Read(p []byte) (int, error) {
 func (i2c *I2C) Close() error {
 	return i2c.rc.Close()
 }
+
+/*
+	func ioctl(fd, cmd, arg uintptr) (err error) {
+		_, _, e1 := syscall.Syscall6(syscall.SYS_IOCTL, fd, cmd, arg, 0, 0, 0)
+		if e1 != 0 {
+			err = e1
+		}
+		return
+	}
+*/
 
 func ioctl(fd, cmd, arg uintptr) (err error) {
 	_, _, e1 := syscall.Syscall6(syscall.SYS_IOCTL, fd, cmd, arg, 0, 0, 0)
